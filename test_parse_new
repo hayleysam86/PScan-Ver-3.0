@@ -1,0 +1,7 @@
+import argparse
+
+port = 0
+
+__Parse = argpase.ArgumentParse()
+__Parse.add_argument('-p', action='store', nargs='*', dest='port')
+args = argparse.parse_args()
