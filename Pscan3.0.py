@@ -30,7 +30,7 @@ def main():
 	__Parser.add_argument('-j', help='Supply Junk data to be sent to the server', action='store', dest='__Junk', default='\x00\x00\x00\x00')
 	__Parser.add_argument('-t', help='Supply Target in the CLI.', action='store', dest='__Target')
 	Args = __Parser.parse_args()
-
+	
 	__LoggingPst = Args.__Logging
 	if (str(__LoggingPst) != 'True'):
 
@@ -50,6 +50,7 @@ def main():
 
 	__Connect_Sgl_Target(str(Args.__Port_Specfic))
 
+	return Args
 ###Parse user supplied flags and place them in the correct variables.
 ###def __Load_Junk_Variables(Data):
 ###	__Load_Variables()
@@ -58,7 +59,7 @@ def main():
 
 def __Load_Target_Variables(__Target):
 	__Load_Variables()
-	Print(Args.__Target)
+	print(Args.__Target)
 	__Target = Args.__Target
 	return __Target
 
@@ -119,6 +120,6 @@ def __Connect_Sgl_Target(__Port_Specfic):
 		T = Thread(__Connect(__Target, __Port_Specfic[i], __SetTimeOut))
 		T.start()
 		i = i + 1
-		
+
 if __name__ == '__main__':
 	main()

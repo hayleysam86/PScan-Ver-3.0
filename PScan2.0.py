@@ -1,4 +1,5 @@
-#import required functions.
+#jiTa
+rmport required functions.
 import os, socket, sys, argparse, time
 from threading import Thread
 
