@@ -41,15 +41,24 @@ def main():
 
 main()
 
-def __Logging_Enabled():
+def __Print_Logging():
 	__Vars = main()
 	if (str(__Vars[1]) == 'False'):
 		__Logging = __Vars[1]
 		print('[-] Logging Enabled')
-		return __Logging
 	elif(str(__Vars[1]) != 'False'):
 		__Logging = __Vars[1]
 		print('[-] Logging disabled')
+
+__Print_Logging()
+
+def __Logging_Enabled():
+	__Vars = main()
+	if (str(__Vars[1]) == 'False'):
+		__Logging = __Vars[1]
+		return __Logging
+	elif(str(__Vars[1]) != 'False'):
+		__Logging = __Vars[1]
 		return __Logging 
 	return __Logging 
 
@@ -72,7 +81,21 @@ def __Port_Specified():
 	__Port_Specific = __Vars[4]
 	__Target = __Vars[2]
 	__Vars2 = __Load_Variables()
-	__Default_Ports = __Vars2[3]
+	__Default_Ports = __Vars2[2]
+
+	if (str(__Port_Specific[0]) == '0'):
+		__Port_Specific = __Default_Ports
+		return __Port_Specific
+	elif (__Port_Specific[0] != 0):
+		return __Port_Specific
+	return __Port_Specific
+
+def __Print_Target():
+	__Vars = main()
+	__Port_Specific = __Vars[4]
+	__Target = __Vars[2]
+	__Vars2 = __Load_Variables()
+	__Default_Ports = __Vars2[2]
 
 	if (__Port_Specific[0] == 0):
 		__Port_Specific = __Default_Ports
@@ -82,7 +105,8 @@ def __Port_Specified():
 	elif (__Port_Specific[0] != 0):
 		print('[-] Scanning target ' + str(__Target) + ' on port: ' + str(__Port_Specific))
 		return __Port_Specific
-	return __Port_Specific
+
+__Print_Target()
 
 def __Junk_Data():
 	__Vars = main()
@@ -96,45 +120,43 @@ def __Junk_Data():
 		print('[-] Using custom Junk: "' + str(__Junk) + '" to send as junk to target.')
 		return __Junk
 
-#__Logging_Enabled()
-#__Target_acquired()
-#__Port_Specified()
-
 def __TimeOut():
 	__SetTimeOut = input('[-] Set timeout in sec: ')
 	return __SetTimeOut
 
-def __Connect(__Target, __Port_Specific, __SetTimeOut, __Junk):
+def __Connect(__Target, __Port_Specific, __SetTimeOut, __Junk, i):
 	__Logging = __Logging_Enabled()
+	__Port_Specific = __Port_Specified()
 
 	try:
 		__Target = str(socket.gethostbyname(__Target))
 		socket.setdefaulttimeout(__SetTimeOut)
 		__Soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		__Soc.connect((__Target, __Port_Specific[0]))
+		__Soc.connect((__Target, __Port_Specific[i]))
 		__Soc.send(__Junk)
 		__Reply = __Soc.recv(63553)
 		__Soc.close()
 
-		__Write_Recv(__Target, __Port_Specific[0], __Reply)
+		__Write_Recv(__Target, __Port_Specific, __Reply, i)
 		if ( __Logging == 'False'):
-			__Write(__Write_Recv)
+			__Write(__Write_Recv(__Target, __Port_Specific, __Reply, i))
 	except(Exception) as E:
-		__Write_Err(__Target, __Port_Specific[0], E)
+		__Write_Err(__Target, __Port_Specific, E, i)
 		if ( __Logging == 'False'):
-			__Write(__Write_Err)
+			__Write(__Write_Err(__Target, __Port_Specific, E, i))
 		return E
+	return __Reply
 
 def __Write(__Data):
 	__Open = open("log.txt", "a")
 	__Open.write(str(__Data) + '\n')
 	__Open.close()
 
-def __Write_Recv(__Target, __Port_Specific, __Reply):
-	print('[-] Recieved ' + str(__Reply) + ' from ' + str(__Target) + ' on port ' +  str(__Port_Specific))
+def __Write_Recv(__Target, __Port_Specific, __Reply, i):
+	print('[-] Recieved ' + str(__Reply) + ' from ' + str(__Target) + ' on port ' +  str(__Port_Specific[i]))
 
-def __Write_Err(__Target, __Port_Specific, E):
-	print('[-] Error: ' + str(E) + ' from ' + str(__Target) + ' on port ' + str(__Port_Specific))
+def __Write_Err(__Target, __Port_Specific, E, i):
+	print('[-] Error: ' + str(E) + ' from ' + str(__Target) + ' on port ' + str(__Port_Specific[i]))
 
 def __Connect_Target():
 	__Vars = main()
@@ -148,25 +170,16 @@ def __Connect_Target():
 
 	__Target = socket.gethostbyname(__Target)
 
-#	print(__Logging)
-#	print(__Target)
-#	print(len(__Port_Specific))
-#	print(__Junk)
-#	print(__SetTimeOut)
 	__Length = int
 	__Length = len(__Port_Specific)
+	print('')
 
-#	print(__Length)
-
-	if (__Length == '1'):
-		__Connect(__Target, __Port_Specific, __SetTimeOut, __Junk)
-		return __Target, __Port_Specific, __SetTimeOut, __Junk, __Reply, E
-
-	elif (__Length != '1'):
-		i = 1
-		while (i > __Length):
-			__Connect(__Target, __Port_Specific, __SetTimeOut, __Junk)
+	i = 0
+	if (str(__Length) == '1'):
+		__Connect(__Target, __Port_Specific, __SetTimeOut, __Junk, i)
+	elif (str(__Length) != '1') and (str(__Length) != '0'):
+		while (i is not __Length):
+			__Connect(__Target, __Port_Specific[i], __SetTimeOut, __Junk, i)
 			i = i + 1
-			return __Target, __Port_Specific, __SetTimeOut, __Junk, __Reply, E
 
 __Connect_Target()
